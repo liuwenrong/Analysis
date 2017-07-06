@@ -1,0 +1,16 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="tv1_width">460px</dimen>
+    <dimen name="tv1_height">720px</dimen>
+    <dimen name="tv2_width">260px</dimen>
+    <dimen name="tv2_height">720px</dimen>
+    <dimen name="tv3_width">720px</dimen>
+    <dimen name="tv3_height">560px</dimen>
+
+    <dimen name="tv1_size">160px</dimen>
+    <dimen name="tv2_size">90px</dimen>
+    <dimen name="tv3_size">80px</dimen>
+
+    <dimen name="margin_top">150px</dimen>
+</resources>

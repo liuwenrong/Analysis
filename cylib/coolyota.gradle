@@ -1,0 +1,36 @@
+//apply plugin: 'com.android.library'
+
+android {
+
+    productFlavors {
+
+//        def defaultApplicationId = "com.android.jv.ink.launcherink"
+
+        userDebug {
+//            applicationId "com.android.jv.ink.launcherink.dev"
+//            manifestPlaceholders = ["AUTHORITY": applicationId]
+        }
+
+        user {
+//            manifestPlaceholders = ["AUTHORITY": defaultApplicationId]
+        }
+
+    }
+
+    sourceSets {
+
+        // userDebug版本
+        userDebug {
+//            manifest.srcFile 'src/coolYota/AndroidManifest.xml'
+//            java.srcDir 'src/usefull/yotadevice/java'
+        }
+
+        // 用户版本
+        user {
+//            java.srcDir 'src/unusefull/yotadevice/java'
+        }
+    }
+
+//    java.srcDir 'src/dev/java'
+//    res.srcDir 'src/dev/res'
+}

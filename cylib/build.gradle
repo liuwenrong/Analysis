@@ -1,0 +1,82 @@
+apply plugin: 'com.android.library'
+//apply from: './coolyota.gradle'
+
+def releaseTime() {
+    return new Date().format("yyyy-MM-dd", TimeZone.getTimeZone("UTC"))
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        minSdkVersion 9
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes { //这里面可以配置debug和release版本的一些参数，比如混淆、签名配置等
+
+        release { //release版本
+            buildConfigField "boolean", "LOG_DEBUG", "false"
+            buildConfigField "String", "BASE_URL", "\"http://pro.dcss.baoliyota.com\""
+            minifyEnabled true //是否开启混淆
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro' //混淆文件位置
+//                signingConfig signingConfigs.keyConfig
+            lintOptions {
+                checkReleaseBuilds false
+                // Or, if you prefer, you can continue to check for errors in release builds,
+                // but continue the build even when errors are found:
+                abortOnError false
+            }
+        }
+
+        debug {
+            buildConfigField "boolean", "LOG_DEBUG", "true"
+            buildConfigField "String", "BASE_URL", "\"http://test.dcss.baoliyota.com\""
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // 移除无用的resource文件
+//            shrinkResources true
+            libraryVariants.all { variant ->
+                variant.outputs.each { output ->
+                    def outputFile = output.outputFile
+                    if (outputFile != null && outputFile.name.endsWith('.aar')) {
+                        // 输出apk名称为cy_analysis-1.0_2015-01-15_coolyota.aar
+                        def fileName
+                        if (variant.buildType.name.equals('release')) {
+                            fileName  = "cy_analysis-${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}.aar"
+                        } else if (variant.buildType.name.equals('debug')) {
+                            fileName = "cy_analysis-${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}-debug.aar"
+                        }
+                        output.outputFile = new File(outputFile.parent, fileName)
+                    }
+                }
+            }
+        }
+
+//        release {
+//            minifyEnabled false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//        }
+
+    }
+    useLibrary('org.apache.http.legacy')
+    productFlavors {
+        baoliyota {}
+        coolyota {}
+        productFlavors.all { flavor ->
+            flavor.manifestPlaceholders = [CHANNEL_VALUE: name]
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    testCompile 'junit:junit:4.12'
+    compile 'com.squareup.okhttp3:okhttp:3.8.0'
+}
