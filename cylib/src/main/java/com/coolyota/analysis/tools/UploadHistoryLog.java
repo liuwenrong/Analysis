@@ -124,6 +124,7 @@ public class UploadHistoryLog extends Thread {
                                 int code = jsonObj.getInt("code");
                                 String msgJson = jsonObj.getString("msg");
                                 if (code == ApiConstants.Code.Success) {
+                                    CommonUtil.setLastUpdateTimeToSP(context);
                                     uploadFile.delete();
                                 }
 

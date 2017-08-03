@@ -63,7 +63,7 @@ public class PicAct extends AppCompatActivity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = DemoApplication.getContext();
+        mContext = JvLApplication.getContext();
         setContentView(R.layout.activity_pic);
         initView();
 

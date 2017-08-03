@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 
 import com.coolyota.analysis.CYAnalysis;
@@ -55,7 +56,16 @@ public class DownloadAct extends Activity {
                 startActivity(new Intent(this, HomeAct.class));
                 break;
             case R.id.download_to_self:
-                startActivity(new Intent(this, DownloadAct.class));
+//                startActivity(new Intent(this, DownloadAct.class));
+//                finish();
+                Log.d("Download", "65--run: 很抱歉,程序出现异常,一秒钟后重启.");
+                android.os.Process.killProcess(android.os.Process.myPid());
+                /*try {
+                    final String command = "am force-stop com.cy.demo";
+                    Process process = Runtime.getRuntime().exec(command);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }*/
                 break;
 
         }

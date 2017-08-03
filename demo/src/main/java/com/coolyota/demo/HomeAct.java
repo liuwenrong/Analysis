@@ -5,20 +5,31 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.coolyota.analysis.CYAnalysis;
-import com.coolyota.analysis.tools.ApiConstants;
-import com.cy.demo.BuildConfig;
+import com.coolyota.demo.fragment.Fragment_1;
+import com.coolyota.demo.fragment.Fragment_2;
+import com.coolyota.demo.fragment.Fragment_3;
+import com.coolyota.demo.fragment.Fragment_4;
+import com.coolyota.demo.fragment.Fragment_5;
 import com.cy.demo.R;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * des: 
+ * des: 研究ViewPager中Fragment的生命周期
  * 
  * @author  liuwenrong
  * @version 1.0,2017/5/25 
@@ -41,15 +52,75 @@ public class HomeAct extends AppCompatActivity {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_view_pager);
         setContentView(R.layout.activity_home);
         Log.d(TAG, "onCreate: ");
         displayMetrics = getResources().getDisplayMetrics();
         density = displayMetrics.density;
         dpi = displayMetrics.densityDpi;
-//        CYAnalysis.setUploadEnabled(false);
-        CYAnalysis.init(this, ApiConstants.KEY_BLauncher, BuildConfig.APPLICATION_ID);
+//        BB.getName();
+
 //        Thread thread = new UploadHistoryLog(this);
 //        handler.post(thread);
+//        initView();
+    }
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+    private void initView() {
+        tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        viewPager = (ViewPager) findViewById(R.id.vp);
+
+        final List <Fragment> data = new ArrayList<>();
+        data.add(new Fragment_1());
+        data.add(new Fragment_2());
+        data.add(new Fragment_3());
+        data.add(new Fragment_4());
+        data.add(new Fragment_5());
+
+        viewPager.setOffscreenPageLimit(1);
+        FragmentPagerAdapter adapter = new FragmentPagerAdapter(getSupportFragmentManager()){
+
+            @Override
+            public int getCount() {
+                return data.size();
+            }
+
+            @Override
+            public Fragment getItem(int position) {
+                return data.get(position);
+            }
+        };
+//        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(adapter);
+
+
+
+//        adapter.setFragmentList(data);
+        tabLayout.setupWithViewPager(viewPager);
+        for (int i = 0 ; i < adapter.getCount() ; i ++){
+            tabLayout.getTabAt(i).setText("Tab_"+(i+1));
+        }
+    }
+
+    class ViewPagerAdapter extends PagerAdapter {
+
+        List<Fragment> mData;
+        public ViewPagerAdapter(FragmentManager fm){
+//            super(fm);
+        }
+        public void setFragmentList(List<Fragment> data) {
+            mData = data;
+        }
+
+        @Override
+        public int getCount() {
+            return mData.size();
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return false;
+        }
     }
 
     @Override
@@ -70,11 +141,13 @@ public class HomeAct extends AppCompatActivity {
 
         TextView tv = (TextView)v;
 
-        Toast.makeText(this, tv.getText() + "的size = " + tv.getTextSize()
+       /* Toast.makeText(this, tv.getText() + "的size = " + tv.getTextSize()
                 +", width = " + tv.getMeasuredWidth() +",height = "
                 + tv.getMeasuredHeight() + ",density = " + density +
                 ",xdpi = " + displayMetrics.xdpi + ",ydpi = " + displayMetrics.ydpi +
-                ", dpi = " + dpi, Toast.LENGTH_SHORT).show();
+                ", dpi = " + dpi, Toast.LENGTH_SHORT).show();*/
+
+//        Toast.makeText(this, "test", Toast.LENGTH_SHORT).show();
 
         Log.e(TAG, "onClick: tv = " + tv.getText().toString());
 
@@ -90,6 +163,8 @@ public class HomeAct extends AppCompatActivity {
                 break;
 
         }
+
+//        throw new NullPointerException();
     }
 
 }

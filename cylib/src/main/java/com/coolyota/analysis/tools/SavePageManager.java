@@ -38,23 +38,23 @@ public class SavePageManager {
      * @return
      * @throws JSONException
      */
-    JSONObject prepareUsinglogJSON(String start_millis, String end_millis,
+    JSONObject prepareUsinglogJSON(String preEndMillis, String start_millis, String end_millis,
             String duration, String activities) throws JSONException {
         JSONObject jsonUsinglog = new JSONObject();
         if (session_id.equals("")) {
             session_id = CommonUtil.getSessionId(contextWR.get());
         }
 
-        jsonUsinglog.put("session_id", session_id);
+        jsonUsinglog.put("activities", activities);
+        jsonUsinglog.put("preEndMillis", preEndMillis);
         jsonUsinglog.put("start_millis", start_millis);
         jsonUsinglog.put("end_millis", end_millis);
         jsonUsinglog.put("duration", duration);
-        jsonUsinglog.put("version", AppInfo.getAppVersion(contextWR.get()));
-        jsonUsinglog.put("activities", activities);
+        jsonUsinglog.put("session_id", session_id);
         jsonUsinglog.put("appkey", AppInfo.getAppKey(contextWR.get()));
-        jsonUsinglog.put("useridentifier",
-                CommonUtil.getUserIdentifier(contextWR.get()));
+        jsonUsinglog.put("useridentifier", CommonUtil.getUserIdentifier(contextWR.get()));
         jsonUsinglog.put("deviceid", DeviceInfo.getDeviceId());
+        jsonUsinglog.put("version", AppInfo.getAppVersion(contextWR.get()));
         jsonUsinglog.put("lib_version", CYConstants.LIB_VERSION);
 
         return jsonUsinglog;
@@ -100,19 +100,24 @@ public class SavePageManager {
         SharedPrefUtil sp = new SharedPrefUtil(context);
         String pageName = sp.getValue("CurrentPage", CommonUtil.getActivityName(context));
 
-        long start = sp.getValue("session_save_time",
-                System.currentTimeMillis());
+        long curTimeMillis = System.currentTimeMillis();
+        long preEnd = sp.getValue(CommonUtil.SESSION_ON_Pause_SAVE_TIME,
+                curTimeMillis);
+        String preEndMillis = CommonUtil.getFormatTime(preEnd);
+
+        long start = sp.getValue(CommonUtil.START_TIME,
+                curTimeMillis);
         String start_millis = CommonUtil.getFormatTime(start);
 
-        long end = System.currentTimeMillis();
+        long end = curTimeMillis;
         String end_millis = CommonUtil.getFormatTime(end);
 
         String duration = end - start + "";
-        CommonUtil.saveSessionTime(context);
+        CommonUtil.saveSessionTime(context, curTimeMillis);
 
         JSONObject info;
         try {
-            info = prepareUsinglogJSON(start_millis, end_millis, duration,
+            info = prepareUsinglogJSON(preEndMillis, start_millis, end_millis, duration,
                     pageName);
             CommonUtil.saveInfoToFile(CYConstants.TYPE_PAGE, info, context);
         } catch (JSONException e) {
@@ -123,25 +128,30 @@ public class SavePageManager {
     public void onWebPage(String pageName,final Context context) {
         SharedPrefUtil sp = new SharedPrefUtil(context);
         String lastView = sp.getValue("CurrentWenPage", "");
+        long end = System.currentTimeMillis();
         if (lastView.equals("")) {
             sp.setValue("CurrentWenPage", pageName);
-            sp.setValue("session_save_time", System.currentTimeMillis());
+            sp.setValue(CommonUtil.SESSION_ON_Pause_SAVE_TIME, end);
         } else {
-            long start = sp.getValue("session_save_time",
-                    System.currentTimeMillis());
+
+            long preEnd = sp.getValue(CommonUtil.SESSION_ON_Pause_SAVE_TIME,
+                    end);
+            String preEndMillis = CommonUtil.getFormatTime(preEnd);
+
+            long start = sp.getValue(CommonUtil.START_TIME,
+                    end);
             String start_millis = CommonUtil.getFormatTime(start);
 
-            long end = System.currentTimeMillis();
             String end_millis = CommonUtil.getFormatTime(end);
 
             String duration = end - start + "";
 
             sp.setValue("CurrentWenPage", pageName);
-            sp.setValue("session_save_time", end);
+            sp.setValue(CommonUtil.SESSION_ON_Pause_SAVE_TIME, end);
 
             JSONObject obj;
             try {
-                obj = prepareUsinglogJSON(start_millis, end_millis, duration,
+                obj = prepareUsinglogJSON(preEndMillis, start_millis, end_millis, duration,
                         lastView);
                 CommonUtil.saveInfoToFile("activityInfo", obj, context);
             } catch (JSONException e) {

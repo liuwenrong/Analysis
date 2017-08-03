@@ -3,7 +3,7 @@
    *
    * Confidential and Proprietary.
    * Unauthorized copying of this file, via any medium is strictly prohibited.
-   * */
+   * *//*
 
 package com.coolyota.analysis.tools;
 
@@ -68,11 +68,11 @@ class NetworkUtil {
 		HttpConnectionParams.setSoTimeout(httpParams, SO_TIMEOUT);
 		DefaultHttpClient httpclient = null;
 		
-		/*SDK会运行在如下两种环境中:
+		*//*SDK会运行在如下两种环境中:
 		 * 1,CPOS:需要进行双向ssl校验；SDK_SSL=true;此时还要验证dn(如果不想验dn，设置SDK_HTTPS_DN为none)
 		 * 2,一般移动设备，是用HTTPS正常发送即可，也能接受非标准证书的https服务端
 		 * 3,测试：使用http
-		*/
+		*//*
 		if (CYConstants.SDK_SECURITY_LEVEL.equals("2")) {
 			httpclient = new DefaultHttpClient(httpParams);
 			// cpos with dn check
@@ -203,4 +203,4 @@ class NetworkUtil {
         }//public
 	    
 	}
-}
+}*/

@@ -66,15 +66,15 @@ public class UploadActivityLog extends Thread {
                 CYLog.i(CYConstants.LOG_TAG, UploadActivityLog.class, "data post activity info");
 
                 //TODO 发送到服务器
-                MyMessage message = NetworkUtil.Post(CYConstants.BASE_URL + CYConstants.PAGE_URL, postData.toString());
-
-                if (!message.isSuccess()) {
-                    //不成功
-                    CYLog.e(CYConstants.LOG_TAG, UploadActivityLog.class, message.getMsg());
-                    for (int i = 0; i < jsonArr.length(); i++) {
-                        CommonUtil.saveInfoToFile(CYConstants.TYPE_PAGE, jsonArr.getJSONObject(i), context);
-                    }
-                }
+//                MyMessage message = NetworkUtil.Post(CYConstants.BASE_URL + CYConstants.PAGE_URL, postData.toString());
+//
+//                if (!message.isSuccess()) {
+//                    //不成功
+//                    CYLog.e(CYConstants.LOG_TAG, UploadActivityLog.class, message.getMsg());
+//                    for (int i = 0; i < jsonArr.length(); i++) {
+//                        CommonUtil.saveInfoToFile(CYConstants.TYPE_PAGE, jsonArr.getJSONObject(i), context);
+//                    }
+//                }
 
 
             } else {

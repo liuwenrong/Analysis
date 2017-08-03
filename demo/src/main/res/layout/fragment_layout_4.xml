@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:visibility="visible"
         android:textSize="@dimen/tv1_size"
-        android:text="Hello World!" />
+        android:text="Hello World!--4" />
 
     <Button
         android:layout_width="wrap_content"
@@ -21,25 +21,6 @@
         android:id="@+id/btn_to_download"
         android:text="跳转下载界面"
         />
-
-<!--    <PreferenceCategory
-        android:key="display_system"
-        android:title="title1">
-        <Preference
-            android:key="ali_lock_screen_more"
-            android:title="title2" >
-            <intent
-                android:action="android.intent.action.MAIN"
-                android:targetClass="com.coolyota.demo.PicAct"
-                android:targetPackage="com.cy.demo" />
-        </Preference>
-        <android.support.v14.preference.SwitchPreference
-            android:key="mistake_touch_mode_key"
-            android:summary="哈哈"
-            android:title="LOG" />
-    </PreferenceCategory>-->
-
-
 
     <Button
         android:layout_width="wrap_content"

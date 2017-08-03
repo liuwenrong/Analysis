@@ -16,9 +16,9 @@ import com.coolyota.analysis.tools.CYLog;
 import com.coolyota.analysis.tools.ClientDataManager;
 import com.coolyota.analysis.tools.CommonUtil;
 import com.coolyota.analysis.tools.SaveEventManager;
+import com.coolyota.analysis.tools.SavePageManager;
 import com.coolyota.analysis.tools.SharedPrefUtil;
 import com.coolyota.analysis.tools.UploadHistoryLog;
-import com.coolyota.analysis.tools.SavePageManager;
 
 import java.lang.ref.WeakReference;
 import java.util.Timer;
@@ -41,6 +41,7 @@ public final class CYAnalysis {
     private static SavePageManager savePageManager;
     private static Timer timer = null;
     private static WeakReference<Context> contextWR;
+    public static WeakReference<Context> contextAppWR;
     private static Handler handler;
 
     static {
@@ -52,7 +53,9 @@ public final class CYAnalysis {
     private static void init(Context context) {
         updateContent(context);
         postClientData();
-        postHistoryLog();
+        if (!CommonUtil.isTodayUpdate(context)) {
+            postHistoryLog();
+        }
 //        onError();
         CYLog.i("CYAnalysis", CYAnalysis.class, "Call init();BaseURL = " + CYConstants.BASE_URL);
         SharedPrefUtil spu = new SharedPrefUtil((Context)contextWR.get());
@@ -79,9 +82,18 @@ public final class CYAnalysis {
         }
     }
 
-    private static void updateContent(Context context) {
+    private static boolean updateContent(Context context) {
+
+        if (context == null) {
+            CYLog.e(TAG, CYAnalysis.class, "context can't be null! ");
+            return false;
+        }
         contextWR = new WeakReference(context);
-        context = null;
+        if (contextAppWR == null) {
+            contextAppWR = new WeakReference<Context>(context);
+        }
+//        context = null;
+        return true;
     }
 
 
@@ -95,16 +107,20 @@ public final class CYAnalysis {
         if(!mIsInit) {
             CYLog.e(TAG, CYAnalysis.class, "init must be called before onResume! ");
         } else {
-            updateContent(context);
-            setSystemStartTime((Context)contextWR.get());
+            if (!updateContent(context)) {
+                return;
+            }
+            setSystemStartTime(contextWR.get());
             Thread thread = new Thread(new Runnable() {
                 public void run() {
                     CYLog.i(TAG, CYAnalysis.class, "Call onFragmentResume()");
-                    if(CYAnalysis.savePageManager == null) {
-                        CYAnalysis.savePageManager = new SavePageManager((Context)CYAnalysis.contextWR.get());
-                    }
+                    if (contextWR.get() != null) {
+                        if(CYAnalysis.savePageManager == null ) {
+                            CYAnalysis.savePageManager = new SavePageManager(contextWR.get());
+                        }
 
-                    CYAnalysis.savePageManager.onFragmentResume((Context)CYAnalysis.contextWR.get(), PageName);
+                        CYAnalysis.savePageManager.onFragmentResume(contextWR.get(), PageName);
+                    }
                 }
             });
             handler.post(thread);
@@ -120,7 +136,10 @@ public final class CYAnalysis {
             CYLog.e(CYConstants.LOG_TAG, CYAnalysis.class, "init must be called before onPause! ");
             return;
         }
-        updateContent(context);
+//        updateContent(context);
+        if (!updateContent(context)) {
+            return;
+        }
         if (timer != null) {
             timer.cancel();
         }
@@ -129,9 +148,11 @@ public final class CYAnalysis {
             @Override
             public void run() {
                 CYLog.i(CYConstants.LOG_TAG, CYAnalysis.class, "Call onPause()");
-                if (savePageManager == null)
-                    savePageManager = new SavePageManager(contextWR.get());
-                savePageManager.onPause(contextWR.get());
+                if (contextWR.get() != null) {
+                    if (savePageManager == null)
+                        savePageManager = new SavePageManager(contextWR.get());
+                    savePageManager.onPause(contextWR.get());
+                }
             }
         });
         handler.post(thread);
@@ -185,8 +206,31 @@ public final class CYAnalysis {
 
     }
 
+    /**
+     * @param uploadEnabled 是否上传,避免测试过程中总是上传导致服务器压力大
+     */
     public static void setUploadEnabled(boolean uploadEnabled){
+        if (mIsInit) {
+            CYLog.e(CYConstants.LOG_TAG, CYAnalysis.class, "Config-setUploadEnabled must be called before init! ");
+            throw new RuntimeException("Config-setUploadEnabled must be called before init! ");
+        }
         CYConstants.uploadEnabled = uploadEnabled;
+    }
+
+    /**
+     * @param debugEnabled 是否是Debug模式,控制jar包打印log和正式或测试服务器
+     */
+    public static void setDebugEnabled(boolean debugEnabled) {
+        if (mIsInit) {
+            CYLog.e(CYConstants.LOG_TAG, CYAnalysis.class, "Config-setDebugEnabled must be called before init! ");
+            throw new RuntimeException("Config-setDebugEnabled must be called before init! ");
+        }
+        CYConstants.DebugEnabled = debugEnabled;
+        if (debugEnabled) {
+            CYConstants.BASE_URL = CYConstants.BASE_URL_TEST;
+        } else {
+            CYConstants.BASE_URL = CYConstants.BASE_URL_PRO;
+        }
     }
 
     public static enum LogLevel {

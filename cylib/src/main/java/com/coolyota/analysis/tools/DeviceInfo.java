@@ -356,7 +356,7 @@ public class DeviceInfo {
     }
 
     public static String getDeviceId() {
-        if (DEVICE_ID.equals("")) {
+        if (DEVICE_ID.equals("") && context != null) {
             try {
                 SharedPrefUtil e = new SharedPrefUtil(context);
                 String uniqueid = e.getValue(SP_KEY_ID, "");

@@ -16,6 +16,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 
 import com.coolyota.analysis.CYAnalysis;
@@ -46,6 +47,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class CommonUtil {
     public static final String TAG = "CYCommonUtil";
+    public static final String SESSION_ON_Pause_SAVE_TIME = "session_save_time";
+    public static final String START_TIME = "start_time";
     private static String USER_ID = "";
     private static String curVersion = "";
     private static ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
@@ -379,7 +382,7 @@ public class CommonUtil {
         sessionId = md5(str);
         SharedPrefUtil sp = new SharedPrefUtil(context);
         sp.setValue("session_id", sessionId);
-        saveSessionTime(context);
+        saveSessionTime(context, System.currentTimeMillis());
         UploadActivityLog threadActivity = new UploadActivityLog(context);
         threadActivity.run();
         return sessionId;
@@ -395,14 +398,62 @@ public class CommonUtil {
         return session_id;
     }
 
-    static void saveSessionTime(Context context) {
+    public static boolean isTodayUpdate(Context context) {
+
+        SharedPrefUtil mSharedPreferences = new SharedPrefUtil(context);
+        long lastUpdateTime = mSharedPreferences.getValue("lastUpdateTime", 0);
+        boolean isTodayUpdate = isToday(lastUpdateTime, null);
+        return isTodayUpdate;
+
+    }
+    /**
+     * @param time time stamp
+     * @param formatType time conversion format
+     * @return is it the day
+     */
+    public static boolean isToday(long time, @Nullable String formatType) {
+        if (time == 0){
+            long currentTime = new Date().getTime();
+            time = currentTime - 86400000;
+        }
+        if (formatType == null) {
+            formatType = "yyyy-MM-dd";
+        }
+        Date dateOld = new Date(time);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(formatType, Locale.getDefault());
+        if (simpleDateFormat.format(dateOld).equals(simpleDateFormat.format(new Date()))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public static void setLastUpdateTimeToSP(Context context) {
+        SharedPrefUtil mSharedPreferences = new SharedPrefUtil(context);
+        mSharedPreferences.setValue("lastUpdateTime", new Date().getTime());
+
+    }
+
+    /**
+     * 记录结束的时间 onPause
+     * @param context
+     */
+    static void saveSessionTime(Context context, long curTimeMillis) {
         SharedPrefUtil sp = new SharedPrefUtil(context);
-        sp.setValue("session_save_time", System.currentTimeMillis());
+        sp.setValue(SESSION_ON_Pause_SAVE_TIME, curTimeMillis);
+    }
+
+    /**
+     * onResume保存时间
+     * @param context
+     */
+    static void saveResumeTime(SharedPrefUtil sp, Context context) {
+        sp.setValue(START_TIME, System.currentTimeMillis());
     }
 
     static void savePageName(Context context, String pageName) {
         SharedPrefUtil sp = new SharedPrefUtil(context);
         sp.setValue("CurrentPage", pageName);
+        saveResumeTime(sp, context);
     }
 
     static String getFormatTime(long timestamp) {

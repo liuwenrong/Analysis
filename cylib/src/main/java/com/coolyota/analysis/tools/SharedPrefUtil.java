@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
+import com.coolyota.analysis.CYAnalysis;
+
 /**
  * des:
  *
@@ -21,7 +23,12 @@ public class SharedPrefUtil {
     private Editor edit = null;
 
     public SharedPrefUtil(Context context) {
-        this.sp = context.getSharedPreferences("coolyota_SharedPref", Context.MODE_PRIVATE);
+
+        if (context != null) {
+            this.sp = context.getSharedPreferences("coolyota_SharedPref", Context.MODE_PRIVATE);
+        } else {
+            sp = CYAnalysis.contextAppWR.get().getSharedPreferences("coolyota_SharedPref", Context.MODE_PRIVATE);
+        }
         this.edit = this.sp.edit();
     }
 

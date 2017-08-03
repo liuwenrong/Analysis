@@ -47,8 +47,8 @@ public class CYConstants {
     public static final String UPLOAD = "Upload.zip";
 
     public static String BASE_URL = BuildConfig.BASE_URL;
-//    public static String BASE_URL = "http://test.dcss.baoliyota.com";
-    //    public static String BASE_URL = "http://pro.dcss.baoliyota.com";
+    public static final String BASE_URL_TEST = "http://test.dcss.baoliyota.com";
+    public static final String BASE_URL_PRO = "http://pro.dcss.baoliyota.com";
     public static boolean DebugEnabled = BuildConfig.LOG_DEBUG;
     public static LogLevel DebugLevel;
     public static long kContinueSessionMillis;

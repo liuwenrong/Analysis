@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-//apply from: './coolyota.gradle'
+apply plugin: 'maven'
 
 def releaseTime() {
     return new Date().format("yyyy-MM-dd", TimeZone.getTimeZone("UTC"))
@@ -20,8 +20,9 @@ android {
         release { //release版本
             buildConfigField "boolean", "LOG_DEBUG", "false"
             buildConfigField "String", "BASE_URL", "\"http://pro.dcss.baoliyota.com\""
-            minifyEnabled true //是否开启混淆
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro' //混淆文件位置
+            minifyEnabled false //是否开启混淆
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //混淆文件位置
 //                signingConfig signingConfigs.keyConfig
             lintOptions {
                 checkReleaseBuilds false
@@ -38,21 +39,21 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             // 移除无用的resource文件
 //            shrinkResources true
-            libraryVariants.all { variant ->
+            /*libraryVariants.all { variant ->
                 variant.outputs.each { output ->
                     def outputFile = output.outputFile
                     if (outputFile != null && outputFile.name.endsWith('.aar')) {
                         // 输出apk名称为cy_analysis-1.0_2015-01-15_coolyota.aar
                         def fileName
                         if (variant.buildType.name.equals('release')) {
-                            fileName  = "cy_analysis-${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}.aar"
+                            fileName = "cy_analysis-${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}.aar"
                         } else if (variant.buildType.name.equals('debug')) {
                             fileName = "cy_analysis-${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}-debug.aar"
                         }
                         output.outputFile = new File(outputFile.parent, fileName)
                     }
                 }
-            }
+            }*/
         }
 
 //        release {
@@ -61,18 +62,67 @@ android {
 //        }
 
     }
-    useLibrary('org.apache.http.legacy')
-    productFlavors {
+//    useLibrary('org.apache.http.legacy')
+    /*productFlavors {
         baoliyota {}
         coolyota {}
         productFlavors.all { flavor ->
             flavor.manifestPlaceholders = [CHANNEL_VALUE: name]
         }
     }
+
+    sourceSets {
+        coolyota {
+            java.srcDir 'src/main/java'
+        }
+    }*/
+
 }
 
+
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+//    println("classifier = " + classifier)
+    from android.sourceSets.main.java.srcDirs //生成在build/libs/目录下
+}
+
+artifacts {
+    archives androidSourcesJar
+}
+
+def artifactId = 'analysis'
+def groupId = "com.coolyota.lib"
+def version = '1.0.0'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+//            snapshotRepository(url: "http://172.16.55.160:8081/repository/maven-snapshot/") {
+//                authentication(userName: nexusUsername, password: nexusPassword)
+//            }
+            pom.artifactId = artifactId
+            pom.groupId = groupId
+            pom.version = version
+            pom.project {
+                packaging 'aar'
+                description 'analysis for by'
+            }
+
+            def devRoot = System.getenv("BY_DEV_ROOT")
+            if (devRoot == null || "".equals(devRoot)) {
+                devRoot = file("./../..").toString()
+                println("devRoot = " + devRoot)
+            }
+            repository(url: "file://${devRoot}/android/distribute/libs")
+            snapshotRepository(url: "file://${devRoot}/android/distribute/libs")
+        }
+    }
+}
+
+
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+//    compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -80,3 +130,21 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.squareup.okhttp3:okhttp:3.8.0'
 }
+
+/*task androidJavadocs(type: Javadoc) {//第三方jar报错如OKHttp,自动生成的Java如BuildConfig报错
+    title = " common API"
+    source = sourceSets.main.allJava
+    destinationDir = file("Z:\\javadocs")
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}*/
+
+//androidJavadocs {
+//    options {
+//        encoding "UTF-8"
+//        charSet 'UTF-8'
+//        author true
+//        version true
+//        links "http://docs.oracle.com/javase/7/docs/api"
+//    }
+//}

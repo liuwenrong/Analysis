@@ -26,23 +26,23 @@ import java.util.Iterator;
  */
 public class SaveEventManager {
     private Context context;
-    private String eventid;
+    private String eventId;
     private String label;
     private String acc;
     private String json = "";
 
-    public SaveEventManager(Context context, String eventid, String label,
+    public SaveEventManager(Context context, String eventId, String label,
                             String acc) {
         this.context = context;
-        this.eventid = eventid;
+        this.eventId = eventId;
         this.label = label;
         this.acc = acc;
     }
 
-    public SaveEventManager(Context context, String eventid, String label,
+    public SaveEventManager(Context context, String eventId, String label,
                             String acc, String json) {
         this.context = context;
-        this.eventid = eventid;
+        this.eventId = eventId;
         this.label = label;
         this.acc = acc;
         this.json = json;
@@ -51,22 +51,18 @@ public class SaveEventManager {
     private JSONObject prepareEventJSON() {
         JSONObject localJSONObject = new JSONObject();
         try {
-            localJSONObject.put("time", DeviceInfo.getDeviceTime());
-            localJSONObject.put("version", AppInfo.getAppVersion(context));
-            localJSONObject.put("event_id", eventid);
-            localJSONObject.put("appkey", AppInfo.getAppKey(context));
             SharedPrefUtil sp = new SharedPrefUtil(context);
-            localJSONObject.put(
-                    "activity",
-                    sp.getValue("CurrentPage",
-                            CommonUtil.getActivityName(context)));
+            localJSONObject.put("activity", sp.getValue("CurrentPage", CommonUtil.getActivityName(context)));
+            localJSONObject.put("event_id", eventId);
+            localJSONObject.put("time", DeviceInfo.getDeviceTime());
+            localJSONObject.put("appkey", AppInfo.getAppKey(context));
+            localJSONObject.put("session_id", CommonUtil.getSessionId(context));
             localJSONObject.put("label", label);
             localJSONObject.put("acc", acc);
-            localJSONObject.put("attachment", "");
-            localJSONObject.put("useridentifier",
-                    CommonUtil.getUserIdentifier(context));
+//            localJSONObject.put("attachment", "");
+            localJSONObject.put("useridentifier", CommonUtil.getUserIdentifier(context));
             localJSONObject.put("deviceid", DeviceInfo.getDeviceId());
-            localJSONObject.put("session_id", CommonUtil.getSessionId(context));
+            localJSONObject.put("version", AppInfo.getAppVersion(context));
             localJSONObject.put("lib_version", CYConstants.LIB_VERSION);
 
             //key值可能会与上面的重复，加一个前缀V_

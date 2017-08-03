@@ -8,8 +8,6 @@
 package com.coolyota.analysis.tools;
 
 
-import com.coolyota.analysis.BuildConfig;
-
 /**
  * @author liuwenrong@coolpad.com
  * @version 1.0, 2017/6/16
@@ -18,7 +16,6 @@ public class ApiConstants {
 
 
 //    public static final String BASE_URL = "http://120.77.80.97";
-    public static final String BASE_URL = BuildConfig.BASE_URL;
 //    public static final String BASE_URL = "http://test.dcss.baoliyota.com";
 //    public static final String BASE_URL = "http://pro.dcss.baoliyota.com";
 //    private static final String BASE_URL = Constants.BASE_URL;
@@ -32,7 +29,7 @@ public class ApiConstants {
     /**
      * 上传路径
      */
-    public static final String PATH_UPLOAD = BASE_URL + "/dcss-collector/log/upload";
+    public static final String PATH_UPLOAD = CYConstants.BASE_URL + "/dcss-collector/log/upload";
 
     /**
      * 登录token
