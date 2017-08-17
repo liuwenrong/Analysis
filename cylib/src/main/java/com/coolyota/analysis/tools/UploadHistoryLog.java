@@ -13,7 +13,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * des: 上传历史的数据包括Page信息,事件信息的文件
@@ -23,6 +22,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class UploadHistoryLog extends Thread {
     public Context context;
+    private static final String TAG = "UploadHistory";
 
     public UploadHistoryLog(Context context) {
         super();
@@ -37,6 +37,7 @@ public class UploadHistoryLog extends Thread {
     @Override
     public void run() {
 
+        CYConstants.uploadEnabled = isExperienceOn();
         if ( !CYConstants.uploadEnabled ) {
             CYLog.w(CYConstants.LOG_TAG, UploadHistoryLog.class, "uploadEnabled is false, can't upload !");
             return;
@@ -58,6 +59,14 @@ public class UploadHistoryLog extends Thread {
         }
     }
 
+    //    检测用户体验开关状态的接口查找 EXPERIENCE_FILE_NAME 这个文件是否存在
+    String  EXPERIENCE_FILE_NAME = "/data/junk-server/UserExperiencePlan";
+    public boolean isExperienceOn() {
+        File file = new File(EXPERIENCE_FILE_NAME);
+        boolean isExperienceOn = file.exists();
+//        Log.i(TAG, "69--------isExperienceOn: " + isExperienceOn);
+        return file.exists();
+    }
     /**
      * @param srcFilePath 数据保存的文件路径
      * @param uploadFilePath 即将上传的文件路径
@@ -70,9 +79,7 @@ public class UploadHistoryLog extends Thread {
         }
 
         //判断xxInfoUpload文件是否存在
-        final ReentrantReadWriteLock rwl = CommonUtil.getRwl();
-
-
+//        final ReentrantReadWriteLock rwl = CommonUtil.getRwl();
 
         final File uploadFile = new File(uploadFilePath);
         File srcFile = null;
@@ -81,15 +88,27 @@ public class UploadHistoryLog extends Thread {
             srcFile = new File(srcFilePath);
             if (!srcFile.exists()){
                 return;
-            } else { //重命名时 加上读写锁
-                while (!rwl.writeLock().tryLock()) {
+            } else { //重命名时 加上读写锁 拿不到锁,导致没法上传,文件重命名拿不到锁
+                /*while (!rwl.writeLock().tryLock()) {
+
+                    CYLog.w(CYConstants.LOG_TAG, UploadHistoryLog.class, "94---等待上锁重命名");
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     ;
                 }
-                rwl.writeLock().lock();
+                rwl.writeLock().lock();*/
 
-                srcFile.renameTo(uploadFile);
+                try {
+                    srcFile.renameTo(uploadFile);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+//                    rwl.writeLock().unlock();
+                }
 
-                rwl.writeLock().unlock();
             }
 
         }

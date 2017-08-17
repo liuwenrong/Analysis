@@ -50,13 +50,15 @@ public class SaveInfo extends Thread {
     }
 
     public void run() {
-        CYLog.d(TAG, SaveInfo.class, "Save cache file " + this.filePath);
+        CYLog.d(TAG, SaveInfo.class, "-----Save cache file " + this.filePath);
         if (this.arrObj.length() != 0) {
             File file = new File(this.filePath);
             long filesize = this.prefUtil.getValue("file_size", CYConstants.defaultFileSize);
             JSONArray usefulData = null;
+            CYLog.d(TAG, SaveInfo.class, "58--------file size:" + file.length());
             if (file.length() > filesize) { //当文件大于默认大小1M即1048576时,文件上传
 
+                CYLog.d(TAG, SaveInfo.class, "61--------file size:" + file.length());
                 UploadHistoryLog thread = new UploadHistoryLog(context);
                 thread.setType(filetype);
                 handler.post(thread);
@@ -146,6 +148,12 @@ public class SaveInfo extends Thread {
         ReentrantReadWriteLock rwl = CommonUtil.getRwl();
 
         while (!rwl.writeLock().tryLock()) {
+            CYLog.w(CYConstants.LOG_TAG, UploadHistoryLog.class, "151---等待上锁写入文件");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             ;
         }
         rwl.writeLock().lock();
