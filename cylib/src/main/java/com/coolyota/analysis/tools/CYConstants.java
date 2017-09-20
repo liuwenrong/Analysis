@@ -26,7 +26,11 @@ public class CYConstants {
     public static final String CONFIG_URL = "/pushpolicyquery";
     public static final String PARAMETER_URL = "/getAllparameters";
     public static final String LOG_TAG = "CYAnalysis";
+    public static final long needDeleteSize = 10 * 1024 * 1024;//大于10M就该删除历史待上传文件
+    public static final int UserPlanOn = 1;
+    public static final int UserPlanOff = 0;
 
+    public static int defaultUserPlan = UserPlanOff;
 
     public static final String CY = "/cy_";
     /**

@@ -5,7 +5,19 @@ def releaseTime() {
 }
 android {
     signingConfigs {
-        config {
+        debug {
+            storeFile file('../keystore/platform.jks')
+        }
+    }
+
+    signingConfigs {
+        keyConfig {
+            keyAlias 'baoliyota'
+            keyPassword '88888888'
+            storeFile file('../keystore/mykey_new.store')
+            storePassword 'password'
+//            v2SigningEnabled true
+//            v1SigningEnabled false
         }
     }
     compileSdkVersion 25
@@ -33,21 +45,22 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             // 移除无用的resource文件
 //            shrinkResources true
-            applicationVariants.all { variant ->
-                variant.outputs.each { output ->
-                    def outputFile = output.outputFile
-                    if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                        // 输出apk名称为
-                        def fileName
-                        if (variant.buildType.name.equals('release')) {
-                            fileName = "cy_demo-${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}.apk"
-                        } else if (variant.buildType.name.equals('debug')) {
-                            fileName = "cy_demo-${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}-debug.apk"
-                        }
-                        output.outputFile = new File(outputFile.parent, fileName)
-                    }
-                }
-            }
+            signingConfig signingConfigs.keyConfig
+//            applicationVariants.all { variant ->
+//                variant.outputs.each { output ->
+//                    def outputFile = output.outputFile
+//                    if (outputFile != null && outputFile.name.endsWith('.apk')) {
+//                        // 输出apk名称为
+//                        def fileName
+//                        if (variant.buildType.name.equals('release')) {
+//                            fileName = "cy_demo-${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}.apk"
+//                        } else if (variant.buildType.name.equals('debug')) {
+//                            fileName = "cy_demo-${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}-debug.apk"
+//                        }
+//                        output.outputFile = new File(outputFile.parent, fileName)
+//                    }
+//                }
+//            }
         }
     }
     productFlavors {

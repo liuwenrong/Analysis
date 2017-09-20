@@ -37,7 +37,7 @@ public class UploadHistoryLog extends Thread {
     @Override
     public void run() {
 
-        CYConstants.uploadEnabled = isExperienceOn();
+        CYConstants.uploadEnabled = UploadFileUtil.isExperienceOn(context);
         if ( !CYConstants.uploadEnabled ) {
             CYLog.w(CYConstants.LOG_TAG, UploadHistoryLog.class, "uploadEnabled is false, can't upload !");
             return;
@@ -59,14 +59,6 @@ public class UploadHistoryLog extends Thread {
         }
     }
 
-    //    检测用户体验开关状态的接口查找 EXPERIENCE_FILE_NAME 这个文件是否存在
-    String  EXPERIENCE_FILE_NAME = "/data/junk-server/UserExperiencePlan";
-    public boolean isExperienceOn() {
-        File file = new File(EXPERIENCE_FILE_NAME);
-        boolean isExperienceOn = file.exists();
-//        Log.i(TAG, "69--------isExperienceOn: " + isExperienceOn);
-        return file.exists();
-    }
     /**
      * @param srcFilePath 数据保存的文件路径
      * @param uploadFilePath 即将上传的文件路径
@@ -74,58 +66,36 @@ public class UploadHistoryLog extends Thread {
      */
     private void postData(String srcFilePath, String uploadFilePath, String type) {
         //首先判断是否能发送，如果不能发送就没必要读文件了
-        if (!CommonUtil.isNetworkAvailable(context)) {
-            return;
-        }
+//        if (!CommonUtil.isNetworkAvailable(context)) {
+//            return;
+//        }
 
         //判断xxInfoUpload文件是否存在
 //        final ReentrantReadWriteLock rwl = CommonUtil.getRwl();
 
+        File srcFile;//将 xxInfo 重命名 成 xxInfoUpload
+        srcFile = new File(srcFilePath);
         final File uploadFile = new File(uploadFilePath);
-        File srcFile = null;
+        if (!srcFile.exists() && !uploadFile.exists()) {
+            return;
+        }
+
         if (!uploadFile.exists()){
-            //将 xxInfo 重命名 成 xxInfoUpload
-            srcFile = new File(srcFilePath);
-            if (!srcFile.exists()){
-                return;
-            } else { //重命名时 加上读写锁 拿不到锁,导致没法上传,文件重命名拿不到锁
-                /*while (!rwl.writeLock().tryLock()) {
+            genUploadFile(srcFilePath, uploadFile);
+        }
+        //当 file或者uploadFile大于10M,删除长时间不上传的文件,  比如用户长期不使用网络,或者关闭了 用户体验开关
+        if ((srcFile.exists() && srcFile.length() >= CYConstants.needDeleteSize) || (uploadFile.exists() && uploadFile.length() >= CYConstants.needDeleteSize)) {
 
-                    CYLog.w(CYConstants.LOG_TAG, UploadHistoryLog.class, "94---等待上锁重命名");
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    ;
-                }
-                rwl.writeLock().lock();*/
-
-                try {
-                    srcFile.renameTo(uploadFile);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-//                    rwl.writeLock().unlock();
-                }
-
+            if (uploadFile.exists() && !CommonUtil.isNetworkTypeWifi(context)) {//不是WiFi的情况下删除旧数据
+                uploadFile.delete();
             }
 
         }
 
-        //有了xxInfoUpload文件 可以开始发送
-//        final HashMap<String, Object> params = new HashMap<>();
-//        params.put(ApiConstants.PARAM_LOG_TYPE, ApiConstants.LOG_TYPE_ANALYSIS);
-//        params.put(ApiConstants.PARAM_PRO_TYPE, DeviceInfo.getProType());
-//        params.put(ApiConstants.PARAM_SYS_VERSION, DeviceInfo.getSysVersion());
-//        params.put(ApiConstants.PARAM_UP_TYPE, ApiConstants.UpType.TYPE_OTHER_APP);
-//        params.put(ApiConstants.PARAM_UP_DESC, "");
-//        params.put(ApiConstants.PARAM_PHONE, "");
-
-//        params.put(ApiConstants.PARAM_FILE, uploadFile);
         if (uploadFile.length()!=0) {
-            //增强判断，以免网络突然中断
-            if (CommonUtil.isNetworkAvailable(context)) {
+            //增强判断，以免网络突然中断, 网络可用,且是WiFi
+//            if (CommonUtil.isNetworkAvailable(context)) {
+            if (CommonUtil.isNetworkAvailable(context) && CommonUtil.isNetworkTypeWifi(context)) {
 
                 UploadFileUtil.uploadFile(uploadFile, new UploadFileUtil.CallbackMessage() {
                     @Override
@@ -160,37 +130,36 @@ public class UploadHistoryLog extends Thread {
             }
         }
 
+    }
 
+    private boolean genUploadFile(String srcFilePath, File uploadFile) {
+        File srcFile;//将 xxInfo 重命名 成 xxInfoUpload
+        srcFile = new File(srcFilePath);
+        if (!srcFile.exists()){
+            return false;
+        } else { //重命名时 加上读写锁 拿不到锁,导致没法上传,文件重命名拿不到锁
+            /*while (!rwl.writeLock().tryLock()) {
 
-        /*JSONObject postData = new JSONObject();
-        JSONArray arr = new JSONArray();
-        try {
-//            tarFile =
-            arr = CommonUtil.getJSONData(srcFilePath, type);
-            if (arr.length() == 0) {
-                return;
-            }
-            postData.put("data", arr);
-        } catch (Exception e) {
-            CYLog.e(CYConstants.LOG_TAG, e);
-        }
-        if (postData != null) {
-            //增强判断，以免网络突然中断
-            if (CommonUtil.isNetworkAvailable(context)) {
-
-                MyMessage message = NetworkUtil.Post(CYConstants.BASE_URL
-                        + url, postData.toString());
-
-                if (!message.isSuccess()) {
-                    CYLog.e(CYConstants.LOG_TAG, UploadHistoryLog.class," Message=" + message.getMsg());
-                    CommonUtil.saveInfoToFile(type, arr, context);
+                CYLog.w(CYConstants.LOG_TAG, UploadHistoryLog.class, "94---等待上锁重命名");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+                ;
+            }
+            rwl.writeLock().lock();*/
 
+            try {
+                srcFile.renameTo(uploadFile);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+//                    rwl.writeLock().unlock();
+            }
 
-            } else {
-                CommonUtil.saveInfoToFile(type, arr, context);
-            }*/
-
+        }
+        return true;
     }
 
 }

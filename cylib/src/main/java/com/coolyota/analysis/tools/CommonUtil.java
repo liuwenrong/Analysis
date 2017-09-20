@@ -7,8 +7,6 @@
 package com.coolyota.analysis.tools;
 
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -46,9 +44,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @version 1.0, 2017/6/22
  */
 public class CommonUtil {
-    public static final String TAG = "CYCommonUtil";
+    public static final String TAG = "CYAnalysis";
     public static final String SESSION_ON_Pause_SAVE_TIME = "session_save_time";
     public static final String START_TIME = "start_time";
+    public static final int ONE_DAY = 86400000;
+    public static final int SIX_HOURS = 21600000;
+    public static long mLastWifiConnectedTime;
     private static String USER_ID = "";
     private static String curVersion = "";
     private static ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
@@ -168,33 +169,21 @@ public class CommonUtil {
             CYLog.e(TAG, CommonUtil.class, "context is null");
             return "";
         } else if (context instanceof Activity) {
-            String am1 = "";
+            String activityName= "";
 
             try {
-                am1 = ((Activity) context).getComponentName().getShortClassName();
+                activityName = ((Activity) context).getComponentName().getShortClassName();
             } catch (Exception var4) {
                 CYLog.e("can not get name", var4);
             }
 
-            if (am1.startsWith(".")) {
-                am1 = am1.replaceFirst(".", "");
+            if (activityName.startsWith(".")) {
+                activityName = activityName.replaceFirst(".", "");
             }
 
-            return am1;
+            return activityName;
         } else {
-            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-            if (checkPermissions(context, "android.permission.GET_TASKS")) {
-                ComponentName cn = ((ActivityManager.RunningTaskInfo) am.getRunningTasks(1).get(0)).topActivity;
-                String name = cn.getShortClassName();
-                if (name.startsWith(".")) {
-                    name = name.replaceFirst(".", "");
-                }
-
-                return name;
-            } else {
-                CYLog.e("lost permission", CommonUtil.class, "android.permission.GET_TASKS");
-                return "";
-            }
+            return "";
         }
     }
 
@@ -219,6 +208,19 @@ public class CommonUtil {
             return curVersion;
         }
     }
+
+    public static int getNetworkIntType(Context ctx) {
+
+        if (ctx == null) {
+            CYLog.e(TAG, CommonUtil.class, "context is null");
+            return TelephonyManager.NETWORK_TYPE_UNKNOWN;
+        } else {
+            TelephonyManager manager = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
+            int type = manager.getNetworkType();
+            return type;
+        }
+    }
+
 
     public static String getNetworkType(Context context) {
         if (context == null) {
@@ -331,7 +333,7 @@ public class CommonUtil {
                 return false;
             } else {
                 NetworkInfo info = cManager.getActiveNetworkInfo();
-                if (info != null && info.isAvailable() && info.getType() == 1) {
+                if (info != null && info.isAvailable() && info.getType() == ConnectivityManager.TYPE_WIFI) {
                     CYLog.i(TAG, CommonUtil.class, "Active Network type is wifi");
                     return true;
                 } else {
@@ -401,20 +403,21 @@ public class CommonUtil {
     public static boolean isTodayUpdate(Context context) {
 
         SharedPrefUtil mSharedPreferences = new SharedPrefUtil(context);
-        long lastUpdateTime = mSharedPreferences.getValue("lastUpdateTime", 0);
+        long lastUpdateTime = mSharedPreferences.getValue(SharedPrefUtil.LAST_UPDATE_TIME, 0);
         boolean isTodayUpdate = isToday(lastUpdateTime, null);
         return isTodayUpdate;
 
     }
+
     /**
-     * @param time time stamp
+     * @param time       time stamp
      * @param formatType time conversion format
      * @return is it the day
      */
     public static boolean isToday(long time, @Nullable String formatType) {
-        if (time == 0){
+        if (time == 0) {
             long currentTime = new Date().getTime();
-            time = currentTime - 86400000;
+            time = currentTime - ONE_DAY;
         }
         if (formatType == null) {
             formatType = "yyyy-MM-dd";
@@ -427,14 +430,16 @@ public class CommonUtil {
             return false;
         }
     }
+
     public static void setLastUpdateTimeToSP(Context context) {
         SharedPrefUtil mSharedPreferences = new SharedPrefUtil(context);
-        mSharedPreferences.setValue("lastUpdateTime", new Date().getTime());
+        mSharedPreferences.setValue(SharedPrefUtil.LAST_UPDATE_TIME, new Date().getTime());
 
     }
 
     /**
      * 记录结束的时间 onPause
+     *
      * @param context
      */
     static void saveSessionTime(Context context, long curTimeMillis) {
@@ -444,6 +449,7 @@ public class CommonUtil {
 
     /**
      * onResume保存时间
+     *
      * @param context
      */
     static void saveResumeTime(SharedPrefUtil sp, Context context) {
@@ -532,46 +538,46 @@ public class CommonUtil {
 
             rwl.writeLock().lock();
 
-                try {
-                    in = new FileInputStream(srcFile);
-                    inputStreamReader = new InputStreamReader(in);
-                    bufferedReader = new BufferedReader(inputStreamReader);
+            try {
+                in = new FileInputStream(srcFile);
+                inputStreamReader = new InputStreamReader(in);
+                bufferedReader = new BufferedReader(inputStreamReader);
 //                    dataIS = new DataInputStream(in);
 
-                    writer = new FileWriter(tarFile, true);
+                writer = new FileWriter(tarFile, true);
 
-                    String strLine;
-                    while ((strLine = bufferedReader.readLine()) != null) {
+                String strLine;
+                while ((strLine = bufferedReader.readLine()) != null) {
 
-                        if (!strLine.equals("")) {
+                    if (!strLine.equals("")) {
 
-                            writer.write( strLine + CYConstants.newLine); //JsonObj+换行
+                        writer.write(strLine + CYConstants.newLine); //JsonObj+换行
 
-                            try {
-                                JSONObject e = new JSONObject(strLine);
-                                jsonArr.put(e);
-                            } catch (Exception var10) {
-                                CYLog.e(TAG, var10);
-                            }
-
-                        }
-
-                    }
-                } catch (Exception var15) {
-                    CYLog.e(TAG, var15);
-                } finally {
-                    if (in != null) {
                         try {
-                            in.close();
-                        } catch (IOException var14) {
-                            CYLog.e(TAG, var14);
+                            JSONObject e = new JSONObject(strLine);
+                            jsonArr.put(e);
+                        } catch (Exception var10) {
+                            CYLog.e(TAG, var10);
                         }
+
                     }
 
-                    rwl.readLock().unlock();
-                    srcFile.delete();
                 }
+            } catch (Exception var15) {
+                CYLog.e(TAG, var15);
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException var14) {
+                        CYLog.e(TAG, var14);
+                    }
+                }
+
+                rwl.readLock().unlock();
+                srcFile.delete();
             }
+        }
 
         return tarFile;
     }

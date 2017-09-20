@@ -19,15 +19,18 @@ import com.coolyota.analysis.CYAnalysis;
  * @version 1.0, 2017/6/22
  */
 public class SharedPrefUtil {
+    public static final String COOLYOTA_SHARED_PREF = "coolyota_SharedPref";
     private SharedPreferences sp = null;
     private Editor edit = null;
+
+    public static final String LAST_UPDATE_TIME = "lastUpdateTime";
 
     public SharedPrefUtil(Context context) {
 
         if (context != null) {
-            this.sp = context.getSharedPreferences("coolyota_SharedPref", Context.MODE_PRIVATE);
+            this.sp = context.getSharedPreferences(COOLYOTA_SHARED_PREF, Context.MODE_PRIVATE);
         } else {
-            sp = CYAnalysis.contextAppWR.get().getSharedPreferences("coolyota_SharedPref", Context.MODE_PRIVATE);
+            sp = CYAnalysis.contextAppWR.get().getSharedPreferences(COOLYOTA_SHARED_PREF, Context.MODE_PRIVATE);
         }
         this.edit = this.sp.edit();
     }

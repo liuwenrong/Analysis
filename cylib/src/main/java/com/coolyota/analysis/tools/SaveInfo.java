@@ -10,6 +10,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 
+import com.coolyota.analysis.CYAnalysis;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,13 +22,12 @@ import java.io.IOException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * des:
- *
+ * des: 保存数据到文件,如果需要的话上传文件,文件太大的时候删除旧文件
  * @author liuwenrong
  * @version 1.0, 2017/6/22
  */
 public class SaveInfo extends Thread {
-    public static final String TAG = "SaveInfo";
+    public static final String TAG = "CYAnalysis";
     public JSONArray arrObj;
     private String filetype;
     private String filePath;
@@ -50,7 +51,7 @@ public class SaveInfo extends Thread {
     }
 
     public void run() {
-        CYLog.d(TAG, SaveInfo.class, "-----Save cache file " + this.filePath);
+        CYLog.d(CYAnalysis.TAG, SaveInfo.class, "-----Save cache file " + this.filePath);
         if (this.arrObj.length() != 0) {
             File file = new File(this.filePath);
             long filesize = this.prefUtil.getValue("file_size", CYConstants.defaultFileSize);

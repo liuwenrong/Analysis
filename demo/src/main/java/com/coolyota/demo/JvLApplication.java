@@ -16,6 +16,7 @@ import android.util.Log;
 
 import com.coolyota.analysis.CYAnalysis;
 import com.coolyota.analysis.tools.ApiConstants;
+import com.coolyota.analysis.tools.CYConstants;
 import com.cy.demo.BuildConfig;
 
 import java.util.ArrayList;
@@ -74,6 +75,7 @@ public class JvLApplication extends Application {
 
         CYAnalysis.setUploadEnabled(true); //设置是否上传到服务器,测试时防止频繁将数据传到数据库
         CYAnalysis.setDebugEnabled(BuildConfig.LOG_DEBUG); //是否打印jar包的log,方便测试,还有配置测试或正式服务器,call before init!
+        CYAnalysis.setUserPlan(CYConstants.UserPlanOn);
         CYAnalysis.init(this, ApiConstants.KEY_BReader, BuildConfig.APPLICATION_ID);
 
 //        Thread.setDefaultUncaughtExceptionHandler(restartHandler); // 程序崩溃时触发线程  以下用来捕获程序崩溃异常

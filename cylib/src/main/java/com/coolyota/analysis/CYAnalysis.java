@@ -53,7 +53,7 @@ public final class CYAnalysis {
     private static void init(Context context) {
         updateContent(context);
         postClientData();
-        if (!CommonUtil.isTodayUpdate(context)) {
+        if (!CommonUtil.isTodayUpdate(context)) { //启动时上传,一天只上传一次
             postHistoryLog();
         }
 //        onError();
@@ -231,6 +231,14 @@ public final class CYAnalysis {
         } else {
             CYConstants.BASE_URL = CYConstants.BASE_URL_PRO;
         }
+    }
+
+    /**
+     * 提供给非系统应用,读取数据库用户体验开关,设置的默认值
+     * @param userPlan
+     */
+    public static void setUserPlan(int userPlan) {
+        CYConstants.defaultUserPlan = userPlan;
     }
 
     public static enum LogLevel {

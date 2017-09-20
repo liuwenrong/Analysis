@@ -18,6 +18,9 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.coolyota.analysis.CYAnalysis;
+import com.coolyota.analysis.network.TestInterceptor;
+import com.coolyota.analysis.tools.MyMessage;
+import com.coolyota.analysis.tools.UploadFileUtil;
 import com.coolyota.demo.fragment.Fragment_1;
 import com.coolyota.demo.fragment.Fragment_2;
 import com.coolyota.demo.fragment.Fragment_3;
@@ -25,7 +28,9 @@ import com.coolyota.demo.fragment.Fragment_4;
 import com.coolyota.demo.fragment.Fragment_5;
 import com.cy.demo.R;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -58,12 +63,14 @@ public class HomeAct extends AppCompatActivity {
         displayMetrics = getResources().getDisplayMetrics();
         density = displayMetrics.density;
         dpi = displayMetrics.densityDpi;
+
 //        BB.getName();
 
 //        Thread thread = new UploadHistoryLog(this);
 //        handler.post(thread);
 //        initView();
     }
+
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private void initView() {
@@ -154,7 +161,15 @@ public class HomeAct extends AppCompatActivity {
         switch (v.getId()) {
             case R.id.home_to_pic:
 
-                startActivity(new Intent(this, PicAct.class));
+//                startActivity(new Intent(this, PicAct.class));
+//                UploadFileUtil.isSystemApp(getContext());
+                CYAnalysis.setUploadEnabled(true);
+                UploadFileUtil.uploadFile(TestInterceptor.Test_Url, new HashMap<String, Object>(), new File(""), new UploadFileUtil.CallbackMessage() {
+                    @Override
+                    public void callbackMsg(MyMessage message) {
+
+                    }
+                });
 
                 break;
             case R.id.home_to_download:
